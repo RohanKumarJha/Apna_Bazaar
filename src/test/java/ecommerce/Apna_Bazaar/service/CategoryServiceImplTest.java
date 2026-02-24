@@ -8,6 +8,7 @@ import ecommerce.Apna_Bazaar.payload.response.CategoryResponseDTO;
 import ecommerce.Apna_Bazaar.payload.response.CategoryResponsePageDTO;
 import ecommerce.Apna_Bazaar.repository.CategoryRepository;
 import ecommerce.Apna_Bazaar.service.Impl.CategoryServiceImpl;
+import ecommerce.Apna_Bazaar.service.Impl.FileServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,9 @@ class CategoryServiceImplTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private FileServiceImpl fileService;
+
     private CategoryServiceImpl categoryService;
 
     private Category category;
@@ -35,11 +39,12 @@ class CategoryServiceImplTest {
 
     @BeforeEach
     void setUp() {
-         ModelMapper modelMapper = new ModelMapper(); // ✅ REAL INSTANCE
+        ModelMapper modelMapper = new ModelMapper(); // ✅ REAL INSTANCE
 
         categoryService = new CategoryServiceImpl(
                 categoryRepository,
-                modelMapper
+                modelMapper,
+                fileService
         );
 
         category = new Category();
@@ -150,6 +155,8 @@ class CategoryServiceImplTest {
     void getAllCategories_success() {
         Page<Category> page = new PageImpl<>(List.of(category));
 
+        when(fileService.pageSort(anyString(), anyString()))
+                .thenReturn(Sort.by("name"));
         when(categoryRepository.findAll(any(Pageable.class)))
                 .thenReturn(page);
 

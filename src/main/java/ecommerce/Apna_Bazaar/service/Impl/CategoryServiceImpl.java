@@ -13,7 +13,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +25,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
+    private final String CACHE_NAME = "categories";
+    private final FileServiceImpl fileService;
 
     @Override
     @Transactional
@@ -66,7 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponsePageDTO getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, pageSort(sortBy, sortDir));
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, fileService.pageSort(sortBy, sortDir));
         Page<Category> page = categoryRepository.findAll(pageable);
         List<Category> categories = page.getContent();
         List<CategoryResponseDTO> categoryResponseDTOS = new ArrayList<>();
@@ -98,12 +99,5 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponsePageDTO.setTotalElements(page.getTotalElements());
         categoryResponsePageDTO.setLast(page.isLast());
         return categoryResponsePageDTO;
-    }
-
-    @Transactional
-    public Sort pageSort(String sortBy, String sortDir) {
-        return sortDir.equalsIgnoreCase("asc")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
     }
 }
